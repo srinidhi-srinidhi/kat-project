@@ -1,0 +1,48 @@
+{
+  "print-call": {
+    "app/agent_infrastructure/tools/tools_utils/automation_tester.py": 16,
+    "app/agent_infrastructure/tools/tools_utils/booknow_provider.py": 13,
+    "app/agent_infrastructure/tools/tools_utils/internal_invite.py": 2,
+    "app/core/config.py": 9,
+    "app/core/logging.py": 2,
+    "app/logs/database_handler.py": 2,
+    "app/utils/sms.py": 1
+  },
+  "db-in-endpoint": {
+    "app/api/v1/endpoints/chat.py": 6,
+    "app/api/v1/endpoints/dataverse_sync.py": 1,
+    "app/api/v1/endpoints/debug_perf.py": 14,
+    "app/api/v1/endpoints/embeddings.py": 8,
+    "app/api/v1/endpoints/events.py": 2,
+    "app/api/v1/endpoints/feeds.py": 2,
+    "app/api/v1/endpoints/instagram.py": 8,
+    "app/api/v1/endpoints/logs.py": 2,
+    "app/api/v1/endpoints/notifications.py": 3,
+    "app/api/v1/endpoints/offerings.py": 6,
+    "app/api/v1/endpoints/offers.py": 4,
+    "app/api/v1/endpoints/providers.py": 1,
+    "app/api/v1/endpoints/users.py": 1,
+    "app/api/v1/endpoints/voice_calls.py": 22
+  },
+  "route-without-auth": {
+    "app/api/v1/endpoints/auth.py": 2,
+    "app/api/v1/endpoints/booking.py": 3,
+    "app/api/v1/endpoints/conversations.py": 6,
+    "app/api/v1/endpoints/debug_perf.py": 2,
+    "app/api/v1/endpoints/embeddings.py": 1,
+    "app/api/v1/endpoints/facebook.py": 6,
+    "app/api/v1/endpoints/feeds.py": 9,
+    "app/api/v1/endpoints/instagram.py": 6,
+    "app/api/v1/endpoints/logs.py": 8,
+    "app/api/v1/endpoints/otpverification.py": 2,
+    "app/api/v1/endpoints/providers.py": 6,
+    "app/api/v1/endpoints/search.py": 1,
+    "app/api/v1/endpoints/services.py": 10,
+    "app/api/v1/endpoints/suggestions.py": 1,
+    "app/api/v1/endpoints/terms_and_conditions.py": 4,
+    "app/api/v1/endpoints/testing.py": 1,
+    "app/api/v1/endpoints/users.py": 11,
+    "app/api/v1/endpoints/voice_calls.py": 2,
+    "app/api/v1/endpoints/whatsapp.py": 1
+  }
+}

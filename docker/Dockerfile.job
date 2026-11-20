@@ -1,0 +1,69 @@
+# Batch-job image for the one-off town-image backfill, run in Azure instead of on a laptop.
+#
+# The main Dockerfile copies only app/ and serves gunicorn, so it cannot run anything in scratch/.
+# This image shares the same base and dependency install, adds the backfill script, and exits when
+# the run finishes rather than serving a port.
+#
+#   docker build -f docker/Dockerfile.job -t etown-town-images:latest .
+#   docker run --rm --env-file .env etown-town-images:latest --limit 2 --execute   # local check
+#
+# PREREQUISITE, and it is the whole point of moving this to the cloud: the image model
+# aimodel.etown.com (115.245.253.226) is a self-hosted box behind an nginx IP allowlist, so the
+# job's egress IP must be added to that allowlist. Unlike a laptop's rotating ISP address, an Azure
+# outbound IP is stable, so this is a one-time request to whoever runs the model host. Get the IP:
+#
+#   az containerapp env show -n <env> -g <rg> --query properties.staticIp -o tsv          # inbound
+#   az containerapp env show -n <env> -g <rg> --query properties.outboundIpAddresses -o tsv
+#
+# The dev Postgres firewall must also admit the job (Azure-services rule, or that same IP), and
+# .env supplies DB, Key Vault, Blob and Dataverse config exactly as it does locally.
+#
+# Azure Container Apps job — runs to completion, bills per second, no HTTP surface:
+#
+#   az acr build -r <registry> -t etown-town-images:latest -f docker/Dockerfile.job .
+#   az containerapp job create \
+#     --name town-image-backfill -g <rg> --environment <env> \
+#     --trigger-type Manual --replica-timeout 21600 --replica-retry-limit 1 \
+#     --image <registry>.azurecr.io/etown-town-images:latest \
+#     --cpu 0.5 --memory 1Gi \
+#     --args "--execute" "--resume-from-db" "--concurrency" "1"
+#   az containerapp job start -n town-image-backfill -g <rg>
+#   az containerapp job execution list -n town-image-backfill -g <rg> -o table
+#
+# --replica-timeout 21600 is 6h: the run is ~1.2h serial at steps=10 for 81 towns, and the timeout
+# has to clear the worst case comfortably or Container Apps kills the replica mid-backfill.
+#
+# Always pass --resume-from-db in the cloud. The local --resume reads a file in scratch/ that a
+# container cannot carry across a restart; --resume-from-db reads progress out of the database, so a
+# killed replica simply picks up the towns that have no ai_generated URL yet. That also makes the
+# job safe to re-run: a completed backfill selects zero rows and exits.
+#
+# Logs go to Postgres (etown_terminal_logs) as they do for the API, and to the job's console:
+#   az containerapp job logs show -n town-image-backfill -g <rg> --container town-image-backfill
+
+FROM python:3.11-slim
+
+RUN useradd -m -u 1000 user
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH \
+    PYTHONPATH=/home/user/code \
+    PYTHONUNBUFFERED=1
+
+WORKDIR $HOME/code
+
+COPY --chown=user:user pyproject.toml ./
+
+RUN uv pip install -r pyproject.toml --system
+
+COPY --chown=user:user app/ ./app/
+COPY --chown=user:user .env ./.env
+COPY --chown=user:user scratch/_backfill_town_images.py ./scratch/
+
+USER user
+
+# No EXPOSE and no server: the container's job is to finish. Args append to this, so
+# `--args "--execute" "--resume-from-db"` becomes the full command line.
+ENTRYPOINT ["python", "scratch/_backfill_town_images.py"]

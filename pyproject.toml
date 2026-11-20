@@ -1,0 +1,62 @@
+[project]
+name = "Etown"
+version = "0.1.0"
+description = "Retrieval augmented generation over arXiv papers"
+requires-python = ">=3.11"
+dependencies = [
+    "python-multipart==0.0.20",
+    "pydantic==2.11.7",
+    "pydantic-settings>=2.0.0",
+    "gunicorn==23.0.0",
+    "uvicorn==0.34.2",
+    "python-dotenv==1.1.0",
+    "tenacity==9.1.2",
+    "requests==2.32.5",
+    "pytz==2025.2",
+    "httpx==0.28.1",
+    "langgraph>=1.1.0",
+    "langchain>=1.2.15",
+    "langchain-openai==1.0.1",
+    "rapidfuzz>=3.14.3",
+    "langchain-core",
+    "ipython==9.2.0",
+    "asyncpg==0.30.0",
+    "aiohttp==3.11.18",
+    "aiofiles==24.1.0",
+    "async-lru",
+    "fastapi",
+    "deepeval",
+    "langchain-google-genai",
+    "google-genai>=0.8.0", 
+    "geopy>=2.4.1",
+    "python-dateutil>=2.9.0.post0",
+    "mem0ai==1.0.4",
+    "azure-identity>=1.18.0",
+    "azure-keyvault-secrets>=4.8.0",
+    "psycopg2-binary==2.9.11",
+    "psutil>=5.9.0",
+    "Pillow>=10.0.0",
+    "aioapns>=4.0",
+    "azure-storage-blob>=12.28.0",
+    "numpy>=1.26.0",
+    "PyJWT>=2.8.0",
+    "cryptography>=42.0.0",
+    "watchdog>=4.0.0",
+    "google-auth>=2.29.0",
+    "openai>=1.0.0",
+    "sqlglot==30.16.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.5",    
+    "pytest-cov==6.1.1",
+    "pytest-asyncio==1.1.0"
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["app"]

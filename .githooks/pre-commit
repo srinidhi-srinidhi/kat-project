@@ -1,0 +1,37 @@
+#!/bin/sh
+root="$(git rev-parse --show-toplevel)"
+cd "$root" || exit 1
+
+if [ -x ".venv/Scripts/python.exe" ]; then
+    py=".venv/Scripts/python.exe"
+elif [ -x ".venv/bin/python" ]; then
+    py=".venv/bin/python"
+else
+    py="python"
+fi
+
+echo "pre-commit: regenerating tables.sql from the database schema..."
+if "$py" scripts/update_tables_sql.py > /dev/null 2>&1; then
+    if git show :tables.sql 2> /dev/null | "$py" -c "import sys; a = sorted(l for l in sys.stdin.buffer.read().decode('utf-8').splitlines() if not l.startswith('-- Generated on')); b = sorted(l for l in open('tables.sql', encoding='utf-8').read().splitlines() if not l.startswith('-- Generated on')); sys.exit(0 if a == b else 1)"; then
+        git checkout -- tables.sql
+        echo "pre-commit: tables.sql schema unchanged."
+    else
+        git add tables.sql
+        echo "pre-commit: tables.sql schema changed and was added to this commit."
+    fi
+else
+    echo "pre-commit: WARNING could not regenerate tables.sql (database unreachable or credentials missing); committing without it."
+fi
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR -- '*.py')"
+if [ -z "$staged" ]; then
+    exit 0
+fi
+
+echo "pre-commit: checking staged Python files against CONVENTIONS.md..."
+if ! "$py" scripts/check_conventions.py $staged; then
+    echo ""
+    echo "pre-commit: commit blocked. Fix the problems above (or ask Claude: /etown-conventions), then commit again."
+    exit 1
+fi
+exit 0
